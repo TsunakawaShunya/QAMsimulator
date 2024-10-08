@@ -44,7 +44,7 @@ int main() {
                 ofsSimulation.open(filenameSimulation);
 
                 for(double EbN0dB = EbN0dBmin; EbN0dB <= EbN0dBmax; EbN0dB += EbN0dBstp) {
-                    sim.set_QPSKNoiseSD(EbN0dB);      // SNセット
+                    sim.setNoiseSD(EbN0dB);      // SNセット
                     ber = sim.getBerSimulation();
 
                     // 標準出力
@@ -87,7 +87,7 @@ int main() {
                 ofsSimulation.open(filenameSimulation);
 
                 for(double EbN0dB = EbN0dBmin; EbN0dB <= EbN0dBmax; EbN0dB += EbN0dBstp) {
-                    sim.set_16QAMNoiseSD(EbN0dB);
+                    sim.setNoiseSD(EbN0dB);      // SNセット
                     ber = sim.getBerSimulation();
 
                     // 標準出力

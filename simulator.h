@@ -125,12 +125,8 @@ class Simulator {
     }
 
     // 加法性雑音の標準偏差を設定
-    void set_QPSKNoiseSD(double EbN0dB) {
-        noiseSD_ = sqrt(0.5 * pow(10.0, -0.1 * EbN0dB));        // 入力された  Eb/N0 [dB] から変換
-    }
-
-    void set_16QAMNoiseSD(double EbN0dB) {
-        noiseSD_ = sqrt(0.25 * pow(10.0, -0.1 * EbN0dB));        // 入力された  Eb/N0 [dB] から変換
+    void setNoiseSD(double EbN0dB) {
+        noiseSD_ = sqrt(pow(10.0, -0.1 * EbN0dB) / (double)NUMBER_OF_BIT);        // 入力された  Eb/N0 [dB] から変換
     }
 
     // -------------- 結果 --------------
@@ -155,10 +151,10 @@ class Simulator {
 
     // 16QAM理論値
     double getQPSK16QAMTheory(double EbN0dB) {
-        double EbN0 = pow(10.0, 0.1 * EbN0dB);
-        return 3.0 / 8.0 * std::erfc(sqrt(2.0 / 5.0 * EbN0)) 
-                + 1.0 / 4.0 * std::erfc(3.0 * sqrt(2.0 / 5.0 * EbN0)) 
-                - 1.0 / 8.0 * std::erfc(5.0 * sqrt(2.0 / 5.0 * EbN0));
+        double gamma_b = pow(10.0, 0.1 * EbN0dB);
+        return (3.0 * Q(sqrt(4.0 / 5.0 * gamma_b)) 
+                + 2.0 * Q(3.0 * sqrt(4.0 / 5.0 * gamma_b)) 
+                - Q(5.0 * sqrt(4.0 / 5.0 * gamma_b))) / 4.0;
     }
 
     protected:
