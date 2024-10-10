@@ -53,74 +53,25 @@ class Simulator {
         // 乱数の設定 
         unitIntUniformRand_.init(0.0, numberOfSymbols_ - 1, seed_);
         unitCNormalRand_.init(0.0, M_SQRT1_2, seed_);
-        unitNormalRand_.init(0.0, 1, seed_);
+        unitNormalRand_.init(0.0, 0.5, seed_);
     }
 
     // デストラクタ
     virtual ~Simulator() {
     }
 
-    // シンボル設計
+    // シンボル設計（一般化）
     void setSymbol() {
-        switch(NUMBER_OF_BIT) {
-            // 4QAM(QPSK)
-            case 2:
-                P_ = 1.0 / 2.0;
+        int M = numberOfSymbols_;               // M = 2^NUMBER_OF_BIT (シンボル数)
+        int sqrtM = sqrt(M);                    // 実部/虚部のレベル数 (例: 16QAMならsqrtM=4)
+        double P = 1.0 / (2.0 * (M - 1) / 3.0); // 平均送信電力の正規化
 
-                for(int i = 0; i < numberOfSymbols_; i++) {
-                    // 1ビット目
-                    if((grayNum_[i] & 1) == 0) {
-                        symbol_(i).real(sqrt(P_));
-                    } else {
-                        symbol_(i).real(-sqrt(P_));
-                    }
+        for (int i = 0; i < numberOfSymbols_; i++) {
+            int realBits = grayNum_[i] & ((1 << (NUMBER_OF_BIT / 2)) - 1);                          // ビット列の後半（実部）
+            int imagBits = (grayNum_[i] >> (NUMBER_OF_BIT / 2)) & ((1 << (NUMBER_OF_BIT / 2)) - 1); // ビット列の前半（虚部）
 
-                    // 2ビット目
-                    if(((grayNum_[i] >> 1) & 1) == 0) {
-                        symbol_(i).imag(sqrt(P_));
-                    } else {
-                        symbol_(i).imag(-sqrt(P_));
-                    }
-                }
-            break;
-
-            // 16QAM
-            case 4:
-                P_ = 1.0 / 10.0;
-
-                for(int i = 0; i < numberOfSymbols_; i++) {
-                    // 実部の設計(3, 4ビット目で決まる)
-                    switch((grayNum_[i] >> 2) & 0b11) {
-                        case 0b00: 
-                            symbol_(i).real(-3 * sqrt(P_));
-                        break;
-                        case 0b01:
-                            symbol_(i).real(-sqrt(P_));
-                        break;
-                        case 0b11: 
-                            symbol_(i).real(sqrt(P_));
-                        break;
-                        case 0b10: 
-                            symbol_(i).real(3 * sqrt(P_));
-                        break;
-                    }
-                    // 虚部の設計(1, 2ビット目で決まる)
-                    switch(grayNum_[i] & 0b11) {
-                        case 0b00: 
-                            symbol_(i).imag(-3 * sqrt(P_));
-                        break;
-                        case 0b01: 
-                            symbol_(i).imag(-sqrt(P_));
-                        break;
-                        case 0b11: 
-                            symbol_(i).imag(sqrt(P_));
-                        break;
-                        case 0b10: 
-                            symbol_(i).imag(3 * sqrt(P_));
-                        break;
-                    }
-                }
-            break;
+            symbol_(i).real(-(2 * realBits - (sqrtM - 1)) * sqrt(P));
+            symbol_(i).imag(-(2 * imagBits - (sqrtM - 1)) * sqrt(P));
         }
     }
 
@@ -131,11 +82,31 @@ class Simulator {
 
     // -------------- 結果 --------------
     // シミュレーション
-    double getBerSimulation() {
+    double getBerSimulation_AWGN() {
         int berCnt = 0;     // ビット誤りの総数
         int a = 1;
         for(int tri = 0; tri < numberOfTrial_; tri++) {
-            berCnt += getBitErrorCount();
+            berCnt += getBitErrorCount_AWGN();
+        }
+
+        return (double)berCnt / (double)numberOfTrial_ / (double)NUMBER_OF_BIT;
+    }
+
+    double getBerSimulation_Flat() {
+        int berCnt = 0;     // ビット誤りの総数
+        int a = 1;
+        for(int tri = 0; tri < numberOfTrial_; tri++) {
+            berCnt += getBitErrorCount_Flat();
+        }
+
+        return (double)berCnt / (double)numberOfTrial_ / (double)NUMBER_OF_BIT;
+    }
+
+    double getBerSimulation_Selective() {
+        int berCnt = 0;     // ビット誤りの総数
+        int a = 1;
+        for(int tri = 0; tri < numberOfTrial_; tri++) {
+            berCnt += getBitErrorCount_Selective();
         }
 
         return (double)berCnt / (double)numberOfTrial_ / (double)NUMBER_OF_BIT;
@@ -144,17 +115,33 @@ class Simulator {
 
     // 理論値
     // QPSK理論値
-    double getQPSKAWGNTheory(double EbN0dB) {
-        double EbN0 = pow(10.0, 0.1 * EbN0dB);
-        return Q(sqrt(2 * EbN0));
+    double getQPSK_AWGNTheory(double EbN0dB) {
+        double gamma_b = pow(10.0, 0.1 * EbN0dB);
+        return Q(sqrt(2 * gamma_b));
     }
 
     // 16QAM理論値
-    double getQPSK16QAMTheory(double EbN0dB) {
+    double get16QAM_AWGNTheory(double EbN0dB) {
         double gamma_b = pow(10.0, 0.1 * EbN0dB);
         return (3.0 * Q(sqrt(4.0 / 5.0 * gamma_b)) 
                 + 2.0 * Q(3.0 * sqrt(4.0 / 5.0 * gamma_b)) 
                 - Q(5.0 * sqrt(4.0 / 5.0 * gamma_b))) / 4.0;
+    }
+
+    // QPSK理論値
+    double getQPSKTheory_fading(double EbN0dB) {
+        double gamma_b = pow(10.0, 0.1 * EbN0dB);
+        double ber = (1 - sqrt(gamma_b / (1.0 + gamma_b))) / 2;
+        return ber;
+    }
+
+    // 16QAM理論値
+    double get16QAMTheory_fading(double EbN0dB) {
+        double gamma_b = pow(10.0, 0.1 * EbN0dB);
+
+        return 3.0 / 8.0 * (1.0 - 1.0 / sqrt(1.0 + 5.0 / 2.0 / gamma_b))
+                + 1.0 / 4.0 * (1.0 - 1.0 / sqrt(1.0 + 5.0 * 2.0 / gamma_b / 9.0))
+                - 1.0 / 8.0 * (1.0 - 1.0 / sqrt(1.0 + 5.0 * 2.0 / gamma_b / 25.0));
     }
 
     protected:
@@ -174,7 +161,7 @@ class Simulator {
     int numberOfTrial_;                                 // 試行回数
     std::complex<double> y_;                            // 受信信号ベクトル
     std::complex<double> x_;                            // 送信信号ベクトル
-    Eigen::Vector2cd h_;                                // 伝送路応答行列
+    std::complex<double> h_;                            // 伝送路応答行列
     std::complex<double> n_;                            // 雑音ベクトル
 
     // 乱数用
@@ -205,14 +192,18 @@ class Simulator {
     // 伝送路
     // AWGN伝送路の初期化
     void initAWGN() {
-        h_(0) = std::complex<double>(1.0, 0.0);
-        h_(1) = std::complex<double>(0.0, 1.0);
+        h_ = 1.0;
+    }
+
+    // フラットフェージング伝送路の初期化
+    void initFlat() {
+        h_.real(unitNormalRand_());
+        h_.imag(h_.real());
     }
 
     // 選択性フェージング伝送路の初期化
     void initSelective() {
-        h_(0) = unitCNormalRand_();
-        h_(1) = unitCNormalRand_();
+        h_ = unitCNormalRand_();
     }
 
     // 送信信号
@@ -228,13 +219,13 @@ class Simulator {
 
     // 受信
     void set_y() {
-        y_ = x_ + noiseSD_ * n_;
+        y_ = x_ + noiseSD_ * n_ / h_;
     }
 
     // 最尤推定で復調
     void set_rxDataByML() {
         for(int i = 0; i < numberOfSymbols_; i++) {
-            distance_(i) = std::abs((symbol_(i) - y_));
+            distance_(i) = std::norm(h_) * std::norm((y_ - symbol_(i)));
         }
         
         Eigen::VectorXd::Index minColumn;       // ノルムが最小な index（つまり受信データ）
@@ -259,7 +250,7 @@ class Simulator {
     }
 
     // ビット誤り数をカウント
-    int getBitErrorCount() {
+    int getBitErrorCount_AWGN() {
         set_x();                    // 送信信号ベクトル生成
         /* 伝送路の初期化
         *  AWGN 伝送路：initAWGN()
@@ -274,6 +265,39 @@ class Simulator {
         // ハミング距離計算
         return hammingDistance(grayNum_[txData_], grayNum_[rxData_]);
     }
+
+        int getBitErrorCount_Flat() {
+        set_x();                    // 送信信号ベクトル生成
+        /* 伝送路の初期化
+        *  AWGN 伝送路：initAWGN()
+        *  フラットフェージング伝送路：initFlat()
+        *  選択性フェージング伝送路：initSelective()
+        */
+        initFlat();                 // 伝送路応答行列を用意
+        set_n();                    // 雑音生成
+        set_y();                    // 受信
+        set_rxDataByML();           //復調
+
+        // ハミング距離計算
+        return hammingDistance(grayNum_[txData_], grayNum_[rxData_]);
+    }
+
+        int getBitErrorCount_Selective() {
+        set_x();                    // 送信信号ベクトル生成
+        /* 伝送路の初期化
+        *  AWGN 伝送路：initAWGN()
+        *  フラットフェージング伝送路：initFlat()
+        *  選択性フェージング伝送路：initSelective()
+        */
+        initSelective();                 // 伝送路応答行列を用意
+        set_n();                    // 雑音生成
+        set_y();                    // 受信
+        set_rxDataByML();           //復調
+
+        // ハミング距離計算
+        return hammingDistance(grayNum_[txData_], grayNum_[rxData_]);
+    }
+
 
     // Q関数
     double Q(double x) {

@@ -4,7 +4,7 @@
 
 // SN比
 static const double EbN0dBmin = 0.0;        // Eb/N0 の最小値 [dB]
-static const double EbN0dBmax = 16.0;       // Eb/N0 の最大値 [dB]
+static const double EbN0dBmax = 30.0;       // Eb/N0 の最大値 [dB]
 static const double EbN0dBstp = 1.0;        // Eb/N0 の間隔 [dB]
 double EbN0dB;
 
@@ -40,12 +40,12 @@ int main() {
             // Simulation
             if(MODE == 0) {
                 // ファイル作成
-                filenameSimulation = "QPSKSimulation.csv";
+                filenameSimulation = "QPSKSimulation_Fading.csv";
                 ofsSimulation.open(filenameSimulation);
 
                 for(double EbN0dB = EbN0dBmin; EbN0dB <= EbN0dBmax; EbN0dB += EbN0dBstp) {
                     sim.setNoiseSD(EbN0dB);      // SNセット
-                    ber = sim.getBerSimulation();
+                    ber = sim.getBerSimulation_Selective();
 
                     // 標準出力
                     std::cout << "--------------------------------------------" << std::endl;
@@ -60,11 +60,11 @@ int main() {
             // Theory
             else if(MODE == 1) {
                 // ファイル作成
-                filenameTheory = "QPSKTheory.csv";
+                filenameTheory = "QPSKTheory_Fading.csv";
                 ofsTheory.open(filenameTheory);
 
                 for(double EbN0dB = EbN0dBmin; EbN0dB <= EbN0dBmax; EbN0dB += EbN0dBstp) {
-                    berTheory = sim.getQPSKAWGNTheory(EbN0dB);
+                    berTheory = sim.getQPSKTheory_fading(EbN0dB);
 
                     // 標準出力
                     std::cout << "--------------------------------------------" << std::endl;
@@ -83,12 +83,12 @@ int main() {
             // Simulation
             if(MODE == 0) {
                 // ファイル作成
-                filenameSimulation = "16QAMSimulation.csv";
+                filenameSimulation = "16QAMSimulation_Fading.csv";
                 ofsSimulation.open(filenameSimulation);
 
                 for(double EbN0dB = EbN0dBmin; EbN0dB <= EbN0dBmax; EbN0dB += EbN0dBstp) {
                     sim.setNoiseSD(EbN0dB);      // SNセット
-                    ber = sim.getBerSimulation();
+                    ber = sim.getBerSimulation_Selective();
 
                     // 標準出力
                     std::cout << "--------------------------------------------" << std::endl;
@@ -103,11 +103,11 @@ int main() {
             // Theory
             else if(MODE == 1) {
                 // ファイル作成
-                filenameTheory = "16QAMTheory.csv";
+                filenameTheory = "16QAMTheory_Fading.csv";
                 ofsTheory.open(filenameTheory);
 
                 for(double EbN0dB = EbN0dBmin; EbN0dB <= EbN0dBmax; EbN0dB += EbN0dBstp) {
-                    berTheory = sim.getQPSK16QAMTheory(EbN0dB);
+                    berTheory = sim.get16QAMTheory_fading(EbN0dB);
 
                     // 標準出力
                     std::cout << "--------------------------------------------" << std::endl;
