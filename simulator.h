@@ -84,7 +84,6 @@ class Simulator {
     // シミュレーション
     double getBerSimulation_AWGN() {
         int berCnt = 0;     // ビット誤りの総数
-        int a = 1;
         for(int tri = 0; tri < numberOfTrial_; tri++) {
             berCnt += getBitErrorCount_AWGN();
         }
@@ -94,7 +93,6 @@ class Simulator {
 
     double getBerSimulation_Flat() {
         int berCnt = 0;     // ビット誤りの総数
-        int a = 1;
         for(int tri = 0; tri < numberOfTrial_; tri++) {
             berCnt += getBitErrorCount_Flat();
         }
@@ -104,7 +102,6 @@ class Simulator {
 
     double getBerSimulation_Selective() {
         int berCnt = 0;     // ビット誤りの総数
-        int a = 1;
         for(int tri = 0; tri < numberOfTrial_; tri++) {
             berCnt += getBitErrorCount_Selective();
         }
@@ -266,7 +263,7 @@ class Simulator {
         return hammingDistance(grayNum_[txData_], grayNum_[rxData_]);
     }
 
-        int getBitErrorCount_Flat() {
+    int getBitErrorCount_Flat() {
         set_x();                    // 送信信号ベクトル生成
         /* 伝送路の初期化
         *  AWGN 伝送路：initAWGN()
@@ -282,7 +279,7 @@ class Simulator {
         return hammingDistance(grayNum_[txData_], grayNum_[rxData_]);
     }
 
-        int getBitErrorCount_Selective() {
+    int getBitErrorCount_Selective() {
         set_x();                    // 送信信号ベクトル生成
         /* 伝送路の初期化
         *  AWGN 伝送路：initAWGN()
