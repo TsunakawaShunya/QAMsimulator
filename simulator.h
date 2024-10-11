@@ -45,7 +45,7 @@ class Simulator {
         grayNum_.resize(numberOfSymbols_);
         symbol_.resize(numberOfSymbols_);
         phi_.resize(numberOfSymbols_);
-        distance_.resize(numberOfSymbols_);
+        obj_.resize(numberOfSymbols_);
 
         // データ（0 ~ 2^M - 1）をセット
         setNum();
@@ -169,8 +169,7 @@ class Simulator {
     cnormal_distribution<> randomNoise_;                // 複素正規乱数
 
     // 距離
-    Eigen::VectorXd distance_;                          // 送信シンボルと受信シンボルのユークリッド距離ベクトル
-
+    Eigen::VectorXd obj_;                          // 最尤推定における最小化の目的関数
 
     // グレイ符号化
     int setGrayCode(int num) {
@@ -222,11 +221,11 @@ class Simulator {
     // 最尤推定で復調
     void set_rxDataByML() {
         for(int i = 0; i < numberOfSymbols_; i++) {
-            distance_(i) = std::norm(h_) * std::norm((y_ - symbol_(i)));
+            obj_(i) = std::norm(h_) * std::norm((y_ - symbol_(i)));
         }
         
         Eigen::VectorXd::Index minColumn;       // ノルムが最小な index（つまり受信データ）
-        distance_.minCoeff(&minColumn);
+        obj_.minCoeff(&minColumn);
         rxData_ = minColumn;
     }
 
