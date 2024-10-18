@@ -60,18 +60,29 @@ class Simulator {
     virtual ~Simulator() {
     }
 
-    // シンボル設計（一般化）
+    // シンボル設計
     void setSymbol() {
-        int M = numberOfSymbols_;               // M = 2^NUMBER_OF_BIT (シンボル数)
+        int M = numberOfSymbols_;               // シンボル数 (M = 2^NUMBER_OF_BIT)
         int sqrtM = sqrt(M);                    // 実部/虚部のレベル数 (例: 16QAMならsqrtM=4)
-        double P = 1.0 / (2.0 * (M - 1) / 3.0); // 平均送信電力の正規化
+        double P = 1.0 / (2.0 * (M - 1) / 3.0);
 
+        // シンボル設計
+        int i = 0;
+        for (int v1 = 0; v1 < sqrtM; v1++) {
+            for (int v2 = 0; v2 < sqrtM; v2++) {
+                symbol_(i).real((2 * v1 - (sqrtM - 1)) * sqrt(P));  // 実部
+                if (v1 % 2 == 0) {  // v1が偶数のときは通常の配置
+                    symbol_(i).imag((2 * v2 - (sqrtM - 1)) * sqrt(P));  // 虚部
+                } else {  // v1が奇数のとき、虚部の値を逆順にする
+                    symbol_(i).imag(((sqrtM - 1) - 2 * v2) * sqrt(P));
+                }
+                i++;
+            }
+        }
+
+        // シンボルの確認出力
         for (int i = 0; i < numberOfSymbols_; i++) {
-            int realBits = grayNum_[i] & ((1 << (NUMBER_OF_BIT / 2)) - 1);                          // ビット列の後半（実部）
-            int imagBits = (grayNum_[i] >> (NUMBER_OF_BIT / 2)) & ((1 << (NUMBER_OF_BIT / 2)) - 1); // ビット列の前半（虚部）
-
-            symbol_(i).real(-(2 * realBits - (sqrtM - 1)) * sqrt(P));
-            symbol_(i).imag(-(2 * imagBits - (sqrtM - 1)) * sqrt(P));
+            std::cout << i << ":" << symbol_(i) << std::endl;
         }
     }
 
