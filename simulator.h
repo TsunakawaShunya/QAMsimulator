@@ -28,7 +28,7 @@ class Simulator {
     Simulator() {
         // 次元を設定
         std::cout << "--------------------------------------------------------------------" << std::endl;
-        std::cout << "Number of Bit? (QPSK:2, 16QAM:4)" << std::endl;
+        std::cout << "Number of Bit? (QPSK:2, 16QAM:4, 64QAM:6)" << std::endl;
         std::cout << "--------------------------------------------------------------------" << std::endl;
         std::cin >> NUMBER_OF_BIT;
 
@@ -111,6 +111,7 @@ class Simulator {
 
 
     // 理論値
+    // AWGN
     // QPSK理論値
     double getQPSK_AWGNTheory(double EbN0dB) {
         double gamma_b = pow(10.0, 0.1 * EbN0dB);
@@ -125,6 +126,18 @@ class Simulator {
                 - Q(5.0 * sqrt(4.0 / 5.0 * gamma_b))) / 4.0;
     }
 
+    // 64QAM理論値
+    double get64QAM_AWGNTheory(double EbN0dB) {
+        double gamma_b = pow(10.0, 0.1 * EbN0dB);
+
+        return (7.0 * Q(sqrt(2.0 / 7.0 * gamma_b)) 
+                + 6.0 * Q(3.0 * sqrt(2.0 / 7.0 * gamma_b)) 
+                - Q(5.0 * sqrt(2.0 / 7.0 * gamma_b))
+                + Q(9.0 * sqrt(2.0 / 7.0 * gamma_b)) 
+                - Q(13.0 * sqrt(2.0 / 7.0 * gamma_b))) / 12.0;
+    }
+
+    // Fading
     // QPSK理論値
     double getQPSKTheory_fading(double EbN0dB) {
         double gamma_b = pow(10.0, 0.1 * EbN0dB);
@@ -140,6 +153,18 @@ class Simulator {
                 + 1.0 / 4.0 * (1.0 - 1.0 / sqrt(1.0 + 5.0 * 2.0 / gamma_b / 9.0))
                 - 1.0 / 8.0 * (1.0 - 1.0 / sqrt(1.0 + 5.0 * 2.0 / gamma_b / 25.0));
     }
+
+    // 64QAM理論値
+    double get64QAMTheory_fading(double EbN0dB) {
+        double gamma_b = pow(10.0, 0.1 * EbN0dB);
+
+        return 7.0 / 24.0 * (1.0 - 1.0 / sqrt(1.0 + 7.0 / gamma_b))
+                + 1.0 / 4.0 * (1.0 - 1.0 / sqrt(1.0 + 7.0 / 9.0 / gamma_b))
+                - 1.0 / 8.0 * (1.0 - 1.0 / sqrt(1.0 + 7.0 / 25.0 / gamma_b))
+                + 1.0 / 24.0 * (1.0 - 1.0 / sqrt(1.0 + 7.0 / 81.0 / gamma_b))
+                - 1.0 / 24.0 * (1.0 - 1.0 / sqrt(1.0 + 7.0 / 169.0 / gamma_b));
+    }
+
 
     protected:
     int numberOfSymbols_;                               // シンボル数

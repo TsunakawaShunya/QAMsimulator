@@ -79,6 +79,7 @@ int main() {
                 break;
             }
         break;
+        // 16QAM
         case 4:
             // Simulation
             if(MODE == 0) {
@@ -108,6 +109,50 @@ int main() {
 
                 for(double EbN0dB = EbN0dBmin; EbN0dB <= EbN0dBmax; EbN0dB += EbN0dBstp) {
                     berTheory = sim.get16QAMTheory_fading(EbN0dB);
+
+                    // 標準出力
+                    std::cout << "--------------------------------------------" << std::endl;
+                    std::cout << "Theory : " << EbN0dB << "," << berTheory << std::endl;
+
+                    // ファイル出力
+                    ofsTheory << EbN0dB << "," << berTheory << std::endl;
+                }
+                std::cout << "--------------------------------------------" << std::endl;
+                ofsTheory.close();
+            } else {
+                break;
+            }
+        break;
+        // 64QAM
+        case 6:
+            // Simulation
+            if(MODE == 0) {
+                // ファイル作成
+                filenameSimulation = "64QAMSimulation_Fading.csv";
+                ofsSimulation.open(filenameSimulation);
+
+                for(double EbN0dB = EbN0dBmin; EbN0dB <= EbN0dBmax; EbN0dB += EbN0dBstp) {
+                    sim.setNoiseSD(EbN0dB);      // SNセット
+                    ber = sim.getBerSimulation_Selective();
+
+                    // 標準出力
+                    std::cout << "--------------------------------------------" << std::endl;
+                    std::cout << "simulation : " << EbN0dB << "," << ber << std::endl;
+
+                    // ファイル出力
+                    ofsSimulation << EbN0dB << "," << ber << std::endl;
+                }
+                std::cout << "--------------------------------------------" << std::endl;
+                ofsSimulation.close();
+            } 
+            // Theory
+            else if(MODE == 1) {
+                // ファイル作成
+                filenameTheory = "64QAMTheory_Fading.csv";
+                ofsTheory.open(filenameTheory);
+
+                for(double EbN0dB = EbN0dBmin; EbN0dB <= EbN0dBmax; EbN0dB += EbN0dBstp) {
+                    berTheory = sim.get64QAMTheory_fading(EbN0dB);
 
                     // 標準出力
                     std::cout << "--------------------------------------------" << std::endl;
