@@ -28,7 +28,7 @@ class Simulator {
     Simulator() {
         // 次元を設定
         std::cout << "--------------------------------------------------------------------" << std::endl;
-        std::cout << "Number of Bit? (QPSK:2, 16QAM:4, 64QAM:6)" << std::endl;
+        std::cout << "Number of Bit? (QPSK:2, 16QAM:4, 64QAM:6, 256QAM:8)" << std::endl;
         std::cout << "--------------------------------------------------------------------" << std::endl;
         std::cin >> NUMBER_OF_BIT;
 
@@ -78,11 +78,6 @@ class Simulator {
                 }
                 i++;
             }
-        }
-
-        // シンボルの確認出力
-        for (int i = 0; i < numberOfSymbols_; i++) {
-            std::cout << i << ":" << symbol_(i) << std::endl;
         }
     }
 
@@ -148,6 +143,26 @@ class Simulator {
                 - Q(13.0 * sqrt(2.0 / 7.0 * gamma_b))) / 12.0;
     }
 
+    // 256QAM理論値
+    double get256QAM_AWGNTheory(double EbN0dB) {
+        double gamma_b = pow(10.0, 0.1 * EbN0dB);
+
+        return (15.0 / 32.0 * Q(sqrt(8.0 / 85.0 * gamma_b)) 
+                + 7.0 / 16.0 * Q(3 * sqrt(8.0 / 85.0 * gamma_b)) 
+                - 1.0 / 32.0 * Q(5 * sqrt(8.0 / 85.0 * gamma_b))
+                + 5.0 / 32.0 * Q(9 * sqrt(8.0 / 85.0 * gamma_b)) 
+                + 3.0 / 32.0 * Q(11 * sqrt(8.0 / 85.0 * gamma_b))
+                - 1.0 / 8.0 * Q(13 * sqrt(8.0 / 85.0 * gamma_b))
+                - 1.0 / 8.0 * Q(15 * sqrt(8.0 / 85.0 * gamma_b))
+                + 1.0 / 8.0 * Q(17 * sqrt(8.0 / 85.0 * gamma_b))
+                + 1.0 / 8.0 * Q(19 * sqrt(8.0 / 85.0 * gamma_b))
+                - 1.0 / 16.0 * Q(21 * sqrt(8.0 / 85.0 * gamma_b))
+                - 1.0 / 16.0 * Q(23 * sqrt(8.0 / 85.0 * gamma_b))
+                + 1.0 / 32.0 * Q(25 * sqrt(8.0 / 85.0 * gamma_b))
+                - 1.0 / 32.0 * Q(29 * sqrt(8.0 / 85.0 * gamma_b)));
+    }
+
+
     // Fading
     // QPSK理論値
     double getQPSKTheory_fading(double EbN0dB) {
@@ -174,6 +189,25 @@ class Simulator {
                 - 1.0 / 8.0 * (1.0 - 1.0 / sqrt(1.0 + 7.0 / 25.0 / gamma_b))
                 + 1.0 / 24.0 * (1.0 - 1.0 / sqrt(1.0 + 7.0 / 81.0 / gamma_b))
                 - 1.0 / 24.0 * (1.0 - 1.0 / sqrt(1.0 + 7.0 / 169.0 / gamma_b));
+    }
+
+    // 256QAM理論値
+    double get256QAMTheory_fading(double EbN0dB) {
+        double gamma_b = pow(10.0, 0.1 * EbN0dB);
+
+        return 15.0 / 64.0 * (1.0 - 1.0 / sqrt(1.0 + 85.0 / 4.0 / gamma_b))
+                + 7.0 / 32.0 * (1.0 - 1.0 / sqrt(1.0 + 85.0 / 4.0 / 9.0 / gamma_b))
+                - 1.0 / 64.0 * (1.0 - 1.0 / sqrt(1.0 + 85.0 / 4.0 / 25.0 / gamma_b))
+                + 5.0 / 64.0 * (1.0 - 1.0 / sqrt(1.0 + 85.0 / 4.0 / 81.0 / gamma_b))
+                + 3.0 / 64.0 * (1.0 - 1.0 / sqrt(1.0 + 85.0 / 4.0 / 121.0 / gamma_b))
+                - 1.0 / 16.0 * (1.0 - 1.0 / sqrt(1.0 + 85.0 / 4.0 / 169.0 / gamma_b))
+                - 1.0 / 16.0 * (1.0 - 1.0 / sqrt(1.0 + 85.0 / 4.0 / 225.0 / gamma_b))
+                + 1.0 / 16.0 * (1.0 - 1.0 / sqrt(1.0 + 85.0 / 4.0 / 289.0 / gamma_b))
+                + 1.0 / 16.0 * (1.0 - 1.0 / sqrt(1.0 + 85.0 / 4.0 / 361.0 / gamma_b))
+                - 1.0 / 32.0 * (1.0 - 1.0 / sqrt(1.0 + 85.0 / 4.0 / 441.0 / gamma_b))
+                - 1.0 / 32.0 * (1.0 - 1.0 / sqrt(1.0 + 85.0 / 4.0 / 529.0 / gamma_b))
+                + 1.0 / 64.0 * (1.0 - 1.0 / sqrt(1.0 + 85.0 / 4.0 / 625.0 / gamma_b))
+                - 1.0 / 64.0 * (1.0 - 1.0 / sqrt(1.0 + 85.0 / 4.0 / 841.0 / gamma_b));
     }
 
 
