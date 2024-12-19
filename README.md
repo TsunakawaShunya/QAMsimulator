@@ -49,8 +49,8 @@ EbN0dBを増やしていって電力比ごとのBERを取る．正確にBERを�
 試行回数増やしていくと終わるのに1日，2日くらいかかることもある．そのため，処理が重複しているコードはやめたい．（DRY原則）</br>
 
 ## 実行結果
-[AWGNの結果](./画像2.png)  
-[選択性フェージングの結果](./画像3.png)  
+[AWGNの結果](./AWGN_result/QAM_BER_AWGN.png)  
+[選択性フェージングの結果](./Fading_result/QAM_BER_Fading.png)  
 シミュレーションの試行回数は$10^{5}$回でやったから，プロットはちょっとぶれてるけど試行回数増やしたら理論値に沿うようになるはず．</br>
 グラフは[ngraph](https://www2e.biglobe.ne.jp/~isizaka/)で描画している．グラフは何で書いてもいいが，ngraph使いたければ，去年の[安倍さんのMレク](https://drive.google.com/drive/u/0/folders/12RqtbDUnCFb7Q4qlp9Xucq_lk0aBjvIU)を参考に．
 
